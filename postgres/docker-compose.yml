@@ -1,0 +1,26 @@
+# Day 2 · Extra — a PostgreSQL server for the workshop, in a Docker container, on localhost:5432.
+#   docker compose up -d        start it (first time: downloads the postgres image, ~100 MB)
+#   docker compose ps           is it running and healthy?
+#   docker compose down         stop it (the data stays in the volume)
+#   docker compose down -v      stop it AND delete the data
+# The password comes from the .env file next to this one (copy .env.example to .env) — never written here.
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: mgit-postgres
+    environment:
+      POSTGRES_USER: mgit
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?copy .env.example to .env and set POSTGRES_PASSWORD}
+      POSTGRES_DB: energy
+    ports:
+      - "127.0.0.1:5432:5432"          # only this laptop can connect — nobody else on the Wi-Fi
+    volumes:
+      - mgit_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mgit -d energy"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  mgit_pgdata:
